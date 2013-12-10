@@ -1,0 +1,12 @@
+# String file for Songza plugin
+
+PLUGIN_SONGZA
+	EN	Songza
+	DE	Songza
+	NL	Songza
+
+PLUGIN_SONGZA_DESC
+	EN	Songza plugin. 
+	DE	Songza Plugin. 
+	NL	Songza plugin. 
+

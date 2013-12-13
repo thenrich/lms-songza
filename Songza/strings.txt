@@ -10,3 +10,7 @@ PLUGIN_SONGZA_DESC
 	DE	Songza Plugin. 
 	NL	Songza plugin. 
 
+PLUGIN_SONGZA_GO
+	EN	Go 
+	DE	Go 
+	NL	Go	

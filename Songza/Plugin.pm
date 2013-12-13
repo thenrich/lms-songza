@@ -1,170 +1,99 @@
 package Plugins::Songza::Plugin;
 
-# SqueezeCenter Copyright 2001-2007 Logitech.
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License,
-# version 2.
+# $Id$
 
 use strict;
-use warnings;
 use base qw(Slim::Plugin::OPMLBased);
 
-use Plugins::Songza::Settings;
-use Scalar::Util qw(blessed);
-use Slim::Control::Request;
-use Slim::Utils::Prefs;
-use Slim::Utils::Log;
-use Slim::Utils::Cache;
-use Slim::Utils::Strings qw(string);
+use URI::Escape qw(uri_escape_utf8);
 
-#use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
 use Plugins::Songza::ProtocolHandler;
-#use Plugins::GoogleMusic::Image;
 
-# TODO: move these constants to the configurable settings?
-# Note: these constants can't be passed to the python API
-use Readonly;
-Readonly my $MAX_RECENT_ITEMS => 50;
-Readonly my $RECENT_CACHE_TTL => 'never';
-
-my %recent_searches;
-tie %recent_searches, 'Tie::Cache::LRU', $MAX_RECENT_ITEMS;
-
-my $cache = Slim::Utils::Cache->new('songza', 3);
-
-my $log;
-my $prefs = preferences('plugin.songza');
+my $log = Slim::Utils::Log->addLogCategory( {
+	category     => 'plugin.songza',
+	defaultLevel => 'ERROR',
+	description  => 'PLUGIN_SONGZA_MODULE_NAME',
+} );
 
 
-BEGIN {
-	$log = Slim::Utils::Log->addLogCategory({
-		'category'     => 'plugin.songza',
-		'defaultLevel' => 'WARN',
-		'description'  => string('PLUGIN_SONGZA'),
-	});
+
+sub initPlugin {
+	my $class = shift;
+	
+	Slim::Player::ProtocolHandlers->registerHandler(
+		songza => 'Plugins::Songza::ProtocolHandler'
+	);
+
+	$class->SUPER::initPlugin(
+		feed   => \&topLevel,
+		tag    => 'songza',
+		menu   => 'radios',
+		weight => 1,
+		is_app => $class->can('nonSNApps') ? 1 : undef,
+	);
+	
+	# Note: Deezer does not wish to be included in context menus
+	# that is why a track info menu item is not created here
+	
+	if ( !main::SLIM_SERVICE ) {
+		# Add a function to view trackinfo in the web
+		Slim::Web::Pages->addPageFunction( 
+			'plugins/songza/trackinfo.html',
+			sub {
+				my $client = $_[0];
+				my $params = $_[1];
+				
+				my $url;
+				
+				my $id = $params->{sess} || $params->{item};
+				
+				if ( $id ) {
+					# The user clicked on a different URL than is currently playing
+					if ( my $track = Slim::Schema->find( Track => $id ) ) {
+						$url = $track->url;
+					}
+					
+					# Pass-through track ID as sess param
+					$params->{sess} = $id;
+				}
+				else {
+					$url = Slim::Player::Playlist::url($client);
+				}
+				
+				Slim::Web::XMLBrowser->handleWebIndex( {
+					client  => $client,
+					feed    => Plugins::Songza::ProtocolHandler->trackInfoURL( $client, $url ),
+					path    => 'plugins/songza/trackinfo.html',
+					title   => 'Songza Track Info',
+					timeout => 35,
+					args    => \@_
+				} );
+			},
+		);
+	}
+}
+
+sub topLevel {
+        my ($client, $callback, $args) = @_;
+
+        
+
+        my @menu = (
+                { name  => 'Go', type => "audio", url => 'songza://songza.com/api/1/station/1747564/next?format=mp3'}
+        );
+
+        $callback->(\@menu);
+}
+
+sub playlistHandler {
+
 }
 
 sub getDisplayName {
 	return 'PLUGIN_SONGZA';
 }
 
-sub initPlugin {
-	my $class = shift;
-
-	$class->SUPER::initPlugin(
-		tag    => 'songza',
-		feed   => \&toplevel,
-		is_app => 1,
-		weight => 1,
-	);
-
-	if (main::WEBUI) {
-		Plugins::Songza::Settings->new;
-	}
-
-
-
-	return;
-}
-
-sub shutdownPlugin {
-
-	return;
-}
-
-sub toplevel {
-        my ($client, $callback, $args) = @_;
-
-        my @menu = (
-                { name  => string('PLUGIN_SONGZA_GO'), type => 'link', url => \&Plugins::Songza::Go }
-        );
-
-        $callback->(\@menu);
-}
-
-
-
-sub my_music {
-
-	return;
-}
-
-sub reload_library {
-
-	return;
-}
-
-sub all_access {
-
-	return;
-}
-
-sub _show_playlist {
-
-	return $menu;
-}
-
-sub _playlists {
-
-	return;
-}
-
-sub search {
-
-	return;
-}
-
-sub search_all_access {
-
-	return;
-}
-
-
-sub add_recent_search {
-
-	return;
-}
-
-sub recent_searches {
-
-	return;
-}
-
-sub _show_track {
-
-	return $menu;
-}
-
-sub _tracks {
-
-	return;
-}
-
-sub _tracks_for_album {
-
-	return;
-}
-
-sub _show_album {
-	return;
-}
-
-sub _albums {
-
-	return;
-}
-
-sub _show_menu_for_artist {
-	return;
-}
-
-sub _show_artist {
-	return;
-}
-
-sub _artists {
-	return;
-}
-
+# Don't add this item to any menu
+sub playerMenu { }
 
 1;

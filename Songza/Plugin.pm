@@ -79,7 +79,7 @@ sub topLevel {
         
 
         my @menu = (
-                { name  => 'Go', type => "audio", url => 'songza://songza.com/api/1/station/1747564/next?format=mp3'}
+                { name  => 'Go', type => "audio", url => 'songza://songza.com/api/1/station/330901/next?format=mp3'}
         );
 
         $callback->(\@menu);

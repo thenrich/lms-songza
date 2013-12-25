@@ -2,7 +2,7 @@
 <extension>
 	<name>PLUGIN_SONGZA</name>
 	<module>Plugins::Songza::Plugin</module>
-	<version>0.0.1</version>
+	<version>0.0.4</version>
 	<description>PLUGIN_SONGZA_DESC</description>
 	<creator>Tim Henrich</creator>
 	<email>tim.henrich@gmail.com</email>

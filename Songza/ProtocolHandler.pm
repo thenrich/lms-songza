@@ -212,7 +212,7 @@ sub _getNextRadioTrack {
 
 	my $params = shift;
 		
-	my $url = 'http://songza.com/api/1/station/1747564/next?format=mp3';
+	my $url = 'http://songza.com/api/1/station/1503362/next?format=mp3';
 
     Slim::Networking::SimpleAsyncHTTP->new(
         sub {
